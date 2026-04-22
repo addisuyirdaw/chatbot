@@ -1,58 +1,72 @@
 import streamlit as st
 import time
 
-# 1. Page Configuration
+# 1. Page Setup
 st.set_page_config(page_title="MyHealthID Assistant", page_icon="🏥", layout="centered")
 
-# 2. Styling to make it look "AI-like"
-st.markdown("""
-    <style>
-    .stChatMessage { border-radius: 15px; margin-bottom: 10px; }
-    .stChatInput { border-radius: 20px; }
-    </style>
-    """, unsafe_allow_html=True)
-
-st.title("🏥 MyHealthID AI Assistant")
-st.caption("Secure Virtual Health Concierge | Offline-Ready Mode")
-
-# 3. Knowledge Base Logic (No API Required - Zero Errors)
+# 2. Expert Knowledge Logic (Specific to your Team)
 def get_ai_response(prompt):
     query = prompt.lower()
-    if "safe" in query or "security" in query or "private" in query:
-        return "🛡️ **Security:** MyHealthID uses bank-level AES-256 encryption. Patient data is only decrypted when a verified health professional scans a unique MyHealthID."
-    elif "fast" in query or "time" in query or "speed" in query:
-        return "⚡ **Efficiency:** We reduce medical record retrieval time from 20 minutes (paper-based) to just 30 seconds (digital)."
-    elif "internet" in query or "rural" in query or "village" in query:
-        return "📶 **Accessibility:** The system is optimized for low-bandwidth. It is designed to work perfectly on 2G and 3G signals in remote Ethiopian clinics."
-    elif "benefit" in query or "why" in query or "problem" in query:
-        return "🌟 **Impact:** MyHealthID eliminates lost patient history, reduces diagnosis errors, and ensures doctors have the full medical picture instantly."
-    elif "who" in query or "team" in query:
-        return "👨‍💻 **Our Team:** We are a group of dedicated students building the digital infrastructure for Ethiopia's future healthcare system."
+    
+    # Who are you?
+    if "who are you" in query or "who are u" in query or "developed" in query:
+        return "👋 I am the MyHealthID AI Assistant, the digital voice of the MyHealthID system. I was developed by the innovative team of **Addisu Yirdaw** and **Belay Kassanew** to modernize healthcare."
+
+    # Purpose / Mission
+    elif "purpose" in query or "goal" in query or "mission" in query or "why" in query:
+        return "🇪🇹 **Our Purpose:** We serve the Ethiopian people in this new century. Our mission is: **No more paper, no more wasted time, no more long queues, and no more lost energy.** We bring efficiency to every clinic."
+
+    # For Mothers
+    elif "mother" in query or "pregnant" in query:
+        return "🤰 **Maternal Health:** MyHealthID ensures a mother's prenatal records follow her everywhere. It saves lives by giving doctors instant access to her history in 30 seconds."
+
+    # Security
+    elif "safe" in query or "security" in query:
+        return "🛡️ **Security:** We use bank-level AES-256 encryption. Your health data is a private treasure, protected by the best digital locks."
+
+    # Location
+    elif "where" in query or "apply" in query:
+        return "📍 **Implementation:** We are launching our pilot in the North Shewa Zone to prove that digital health works in both cities and rural health posts."
+
+    # Default Fallback
     else:
-        return "I am the MyHealthID expert. You can ask me about our **Security**, **Speed**, or how we work in **Rural areas**."
+        return "I am the MyHealthID expert. Ask me: **Who are you?**, **What is your purpose?**, or **How do you help mothers?**"
 
-# 4. Initialize Chat History
+# 3. Audio Function (Browser-Based TTS)
+def speak_text(text):
+    clean_text = text.replace('**', '').replace('🏥', '').replace('👋', '').replace('🇪🇹', '').replace('🛡️', '').replace('📍', '').replace('🤰', '')
+    components_code = f"""
+        <script>
+        var msg = new SpeechSynthesisUtterance("{clean_text}");
+        window.speechSynthesis.speak(msg);
+        </script>
+    """
+    st.components.v1.html(components_code, height=0)
+
+# 4. UI Display
+st.title("🏥 MyHealthID AI Assistant")
+st.markdown("### *'No Paper. No Queues. Just Health.'*")
+
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! I am the MyHealthID AI. How can I help you understand our system today?"}
-    ]
+    st.session_state.messages = [{"role": "assistant", "content": "Welcome. I am the voice of MyHealthID. Ask me about our mission or our founders."}]
 
-# 5. Display Chat History
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
-# 6. Chat Input & Logic
-if user_input := st.chat_input("Ask a question about MyHealthID..."):
-    # Add User Message
+# 5. Chat Input Logic
+if user_input := st.chat_input("Ask MyHealthID..."):
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.write(user_input)
 
-    # Generate & Display Response
-    with st.chat_message("assistant"):
-        with st.spinner("Analyzing system data..."):
-            time.sleep(0.8)  # Mimics AI processing time
-            response = get_ai_response(user_input)
+    with st.spinner("Processing..."):
+        time.sleep(0.6)
+        response = get_ai_response(user_input)
+        
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.chat_message("assistant"):
             st.write(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
+        
+        # Audio Trigger
+        speak_text(response)
